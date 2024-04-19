@@ -1,12 +1,17 @@
 import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, ExtensionContext, TextDocument, languages, window, workspace, Range, Selection } from "vscode";
 import { COMMAND_INSPECT_RANGE, registerCommands } from "./commands";
 import { InspectActionCodeLensProvider } from "./InspectActionCodeLensProvider";
+import { DefaultRenderer } from "./render/DefaultRenderer";
+import { InspectionRenderer } from "./render/InspectionRenderer";
 
 export const DEPENDENT_EXTENSIONS = ['github.copilot-chat', 'redhat.java'];
 
-export async function activateCopilotInspection(context: ExtensionContext): Promise<void> {
+export async function activateCopilotInspection(context: ExtensionContext): Promise<void> {    
+    const renderer: InspectionRenderer = new DefaultRenderer(context);
 
-    registerCommands();
+    // Commands
+    registerCommands(renderer);
+    renderer.install(context);
 
     const inspectActionCodeLenses = new InspectActionCodeLensProvider().install(context);
 
