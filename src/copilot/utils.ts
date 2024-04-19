@@ -48,6 +48,11 @@ function getClassesAndMethodsOfSymbols(symbols: DocumentSymbol[]): DocumentSymbo
     return result;
 }
 
+export async function getClassesAndMethodsOfDoc(document: TextDocument): Promise<DocumentSymbol[]> {
+    const stack = ((await commands.executeCommand<DocumentSymbol[]>('vscode.executeDocumentSymbolProvider', document.uri)) ?? []).reverse();
+    return getClassesAndMethodsOfSymbols(stack);
+}
+
 export async function getFirstLevelClassesOfDoc(document: TextDocument): Promise<DocumentSymbol[]> {
     const symbols = ((await commands.executeCommand<DocumentSymbol[]>('vscode.executeDocumentSymbolProvider', document.uri)) ?? []);
     return symbols.filter(symbol => CLASS_KINDS.includes(symbol.kind));

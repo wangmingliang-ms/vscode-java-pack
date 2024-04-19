@@ -5,6 +5,7 @@ import { Inspection } from "./Inspection";
 import path from "path";
 import { TextDocument, DocumentSymbol, SymbolKind, ProgressLocation, commands, Position, Range, Selection, window } from "vscode";
 import { COMMAND_FIX } from "./commands";
+import InspectionCache from "./InspectionCache";
 
 export default class InspectionCopilot extends Copilot {
 
@@ -165,6 +166,7 @@ export default class InspectionCopilot extends Copilot {
                 selection === "Go to" && void Inspection.highlight(inspections[0]);
             });
         }
+        InspectionCache.cache(inspections, symbols, document);
         return inspections;
     }
 
