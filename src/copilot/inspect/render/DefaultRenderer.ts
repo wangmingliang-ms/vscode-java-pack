@@ -7,6 +7,7 @@ import { RulerHighlightRenderer } from "./RulerHighlightRenderer";
 import { Inspection } from "../Inspection";
 import { InspectionRenderer } from "./InspectionRenderer";
 import { sendInfo } from "vscode-extension-telemetry-wrapper";
+import { isCodeLensDisabled } from "../../../copilot/utils";
 
 export class DefaultRenderer implements InspectionRenderer {
     private readonly renderers: { [type: string]: InspectionRenderer } = {};
@@ -46,7 +47,7 @@ export class DefaultRenderer implements InspectionRenderer {
         const settings = types.map(type => config.get<boolean>(type) ? type.toLowerCase() : '').filter(t => t);
         if (settings.length === 0) {
             settings.push('diagnostics');
-            settings.push('codelenses');
+            settings.push(isCodeLensDisabled() ? 'guttericons' : 'codelenses');
             settings.push('rulerhighlights');
         }
         return settings;
