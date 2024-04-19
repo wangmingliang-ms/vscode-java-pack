@@ -4,6 +4,8 @@ import { Inspection } from "../Inspection";
 import { InspectionRenderer } from "./InspectionRenderer";
 import { logger } from "../../../copilot/utils";
 import { COMMAND_FIX } from "../commands";
+import path from "path";
+import InspectionCache from "../InspectionCache";
 
 export class CodeLensRenderer implements InspectionRenderer {
     private readonly codeLenses: Map<Uri, CodeLens[]> = new Map();
@@ -33,6 +35,13 @@ export class CodeLensRenderer implements InspectionRenderer {
             this.codeLenses.clear();
         }
         this.provider.refresh();
+    }
+
+    public async rerender(document: TextDocument): Promise<void> {
+        logger.debug(`[CodeLensRenderer] rerender ${path.basename(document.uri.fsPath)}`);
+        this.clear(document);
+        const inspections = await InspectionCache.getCachedInspectionsOfDoc(document);
+        this.renderInspections(document, inspections);
     }
 
     public renderInspections(document: TextDocument, inspections: Inspection[]): void {

@@ -3,6 +3,8 @@ import { DecorationOptions, ExtensionContext, OverviewRulerLane, TextDocument, T
 import { Inspection } from "../Inspection";
 import { InspectionRenderer } from "./InspectionRenderer";
 import { logger } from "../../../copilot/utils";
+import InspectionCache from "../InspectionCache";
+import path from "path";
 
 export class RulerHighlightRenderer implements InspectionRenderer {
     private readonly rulerHighlights: Map<Uri, RulerHighlight[]> = new Map();
@@ -36,6 +38,13 @@ export class RulerHighlightRenderer implements InspectionRenderer {
             this.rulerHighlights?.clear();
         }
         window.visibleTextEditors.forEach(editor => this.rulerDecorationType && editor.setDecorations(this.rulerDecorationType, []));
+    }
+
+    public async rerender(document: TextDocument): Promise<void> {
+        logger.debug(`[RulerRenderer] rerender ${path.basename(document.uri.fsPath)}`);
+        this.clear(document);
+        const inspections = await InspectionCache.getCachedInspectionsOfDoc(document);
+        this.renderInspections(document, inspections);
     }
 
     public renderInspections(document: TextDocument, inspections: Inspection[]): void {

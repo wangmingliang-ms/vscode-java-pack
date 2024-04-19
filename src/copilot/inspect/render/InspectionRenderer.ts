@@ -5,5 +5,6 @@ export interface InspectionRenderer {
     install(context: ExtensionContext): void;
     uninstall(): void;
     clear(document?: TextDocument): void;
+    rerender(document: TextDocument): void;
     renderInspections(document: TextDocument, inspections: Inspection[]): void;
 }

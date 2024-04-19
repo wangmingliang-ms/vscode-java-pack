@@ -64,6 +64,10 @@ export class DefaultRenderer implements InspectionRenderer {
         this.installedRenderers.forEach(r => r.clear(document));
     }
 
+    public async rerender(document: TextDocument): Promise<void> {
+        this.installedRenderers.forEach(r => r.rerender(document));
+    }
+
     public renderInspections(document: TextDocument, inspections: Inspection[]): void {
         this.installedRenderers.forEach(r => r.renderInspections(document, inspections));
     }

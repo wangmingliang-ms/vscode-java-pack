@@ -4,6 +4,8 @@ import { Inspection } from "../Inspection";
 import { InspectionRenderer } from "./InspectionRenderer";
 import { logger } from "../../../copilot/utils";
 import { COMMAND_FIX } from "../commands";
+import InspectionCache from "../InspectionCache";
+import path from "path";
 
 const DIAGNOSTICS_GROUP = 'java.copilot.inspection.diagnostics';
 
@@ -31,6 +33,13 @@ export class DiagnosticRenderer implements InspectionRenderer {
         } else {
             this.diagnostics?.clear();
         }
+    }
+
+    public async rerender(document: TextDocument): Promise<void> {
+        logger.debug(`[DiagnosticRenderer] rerender ${path.basename(document.uri.fsPath)}`);
+        this.clear(document);
+        const inspections = await InspectionCache.getCachedInspectionsOfDoc(document);
+        this.renderInspections(document, inspections);
     }
 
     public renderInspections(document: TextDocument, inspections: Inspection[]): void {

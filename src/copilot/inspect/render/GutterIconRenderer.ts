@@ -5,6 +5,7 @@ import { InspectionRenderer } from "./InspectionRenderer";
 import { logger } from "../../../copilot/utils";
 import path = require("path");
 import { COMMAND_FIX } from "../commands";
+import InspectionCache from "../InspectionCache";
 
 export class GutterIconRenderer implements InspectionRenderer {
     private readonly gutterIcons: Map<Uri, GutterIcon[]> = new Map();
@@ -38,6 +39,13 @@ export class GutterIconRenderer implements InspectionRenderer {
             this.gutterIcons?.clear();
         }
         window.visibleTextEditors.forEach(editor => this.gutterIconDecorationType && editor.setDecorations(this.gutterIconDecorationType, []));
+    }
+
+    public async rerender(document: TextDocument): Promise<void> {
+        logger.debug(`[GutterIconRenderer] rerender ${path.basename(document.uri.fsPath)}`);
+        this.clear(document);
+        const inspections = await InspectionCache.getCachedInspectionsOfDoc(document);
+        this.renderInspections(document, inspections);
     }
 
     public renderInspections(document: TextDocument, inspections: Inspection[]): void {
