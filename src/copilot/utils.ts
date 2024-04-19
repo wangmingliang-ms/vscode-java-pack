@@ -61,3 +61,10 @@ export async function getFirstLevelClassesOfDoc(document: TextDocument): Promise
 export function uncapitalize(str: string): string {
     return str.charAt(0).toLowerCase() + str.slice(1);
 }
+
+export async function getProjectJavaVersion(document: TextDocument): Promise<number> {
+    const uri = document.uri.toString();
+    const key = "org.eclipse.jdt.core.compiler.source";
+    const settings: { [key]: string } = await commands.executeCommand("java.project.getSettings", uri, [key]);
+    return parseInt(settings[key]) || 17;
+}
