@@ -3,7 +3,7 @@ import { DocumentSymbol, LogOutputChannel, SymbolKind, TextDocument, commands, w
 export const CLASS_KINDS: SymbolKind[] = [SymbolKind.Class, SymbolKind.Interface, SymbolKind.Enum];
 export const METHOD_KINDS: SymbolKind[] = [SymbolKind.Method, SymbolKind.Constructor];
 
-export const logger: LogOutputChannel = window.createOutputChannel("Rewriting Suggestions", { log: true });
+export const logger: LogOutputChannel = window.createOutputChannel("Java Rewriting Suggestions", { log: true });
 
 export async function getContainedClassesOfRange(range: Range | Selection, document: TextDocument): Promise<DocumentSymbol[]> {
     const stack = ((await commands.executeCommand<DocumentSymbol[]>('vscode.executeDocumentSymbolProvider', document.uri)) ?? []).reverse();
