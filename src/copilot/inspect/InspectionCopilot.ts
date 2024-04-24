@@ -228,6 +228,7 @@ export default class InspectionCopilot extends Copilot {
         const inspections = this.extractInspections(codeWithInspectionComments, codeLines);
         // add properties for telemetry
         sendInfo('java.copilot.inspect.code', { 
+            javaVersion: context.javaVersion,
             codeLength: code.length, 
             codeLines: codeLines.length, 
             insectionsCount: inspections.length, 
