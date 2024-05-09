@@ -1,5 +1,5 @@
-import { TextDocument, Range, Selection, commands, window, Uri, env } from "vscode";
-import { instrumentOperationAsVsCodeCommand } from "vscode-extension-telemetry-wrapper";
+import { TextDocument, Range, Selection, commands, window, CommentThread, Uri, env } from "vscode";
+import { instrumentOperationAsVsCodeCommand, sendInfo } from "vscode-extension-telemetry-wrapper";
 import InspectionCopilot from "./InspectionCopilot";
 import { Inspection } from "./Inspection";
 import { logger, sendEvent, uncapitalize } from "../utils";
@@ -7,13 +7,16 @@ import { SymbolNode } from "./SymbolNode";
 import { DocumentRenderer } from "./DocumentRenderer";
 import InspectionCache from "./InspectionCache";
 import path from "path";
+import { InspectionComment } from "./render/CommentRenderer";
 
 export const COMMAND_INSPECT_CLASS = 'java.copilot.inspect.class';
 export const COMMAND_INSPECT_DOCUMENT = 'java.copilot.inspect.document';
 export const COMMAND_INSPECT_MORE = 'java.copilot.inspect.more';
 export const COMMAND_INSPECT_RANGE = 'java.copilot.inspect.range';
 export const COMMAND_FIX_INSPECTION = 'java.copilot.inspection.fix';
+export const COMMAND_FIX_INSPECTION_FROM_COMMENT = 'java.copilot.inspection.fix.comment';
 export const COMMAND_IGNORE_INSPECTIONS = 'java.copilot.inspection.ignore';
+export const COMMAND_IGNORE_INSPECTIONS_FROM_COMMENT = 'java.copilot.inspection.ignore.comment';
 
 const LEARN_MORE_RESPONSE_FILTERED = 'https://docs.github.com/en/copilot/configuring-github-copilot/configuring-github-copilot-settings-on-githubcom#enabling-or-disabling-duplication-detection';
 
@@ -90,7 +93,9 @@ export function registerCommands(copilot: InspectionCopilot, renderer: DocumentR
         renderer.rerender(document);
     });
 
-    instrumentOperationAsVsCodeCommand(COMMAND_FIX_INSPECTION, async (inspectionOrPath: Inspection | string, source: string) => {
+    instrumentOperationAsVsCodeCommand(COMMAND_FIX_INSPECTION, fixUsingCopilot);
+
+    async function fixUsingCopilot(inspectionOrPath: Inspection | string, source: string) {
         // source is where is this command triggered from, e.g. "gutter", "codelens", "diagnostic"
         const inspection = typeof inspectionOrPath === 'string' ? InspectionCache.getInspectionByPath(inspectionOrPath) : inspectionOrPath;
         if (!inspection) {
@@ -108,12 +113,28 @@ export function registerCommands(copilot: InspectionCopilot, renderer: DocumentR
             initialSelection: new Selection(range.start, range.start),
             initialRange: new Range(range.start, range.start)
         });
-    });
+    }
 
     instrumentOperationAsVsCodeCommand(COMMAND_IGNORE_INSPECTIONS, async (document: TextDocument, symbol?: SymbolNode, inspection?: Inspection) => {
         InspectionCache.ignoreInspections(document, symbol, inspection);
         sendEvent('java.copilot.inspection.inspectionIgnored', inspection ? { problem: inspection.problem.description, solution: inspection.solution } : {});
         renderer.rerender(document);
+    });
+
+    instrumentOperationAsVsCodeCommand(COMMAND_FIX_INSPECTION_FROM_COMMENT, async (thread: CommentThread) => {
+        const comment = thread.comments[0] as InspectionComment;
+        fixUsingCopilot(comment.inspection, 'comment');
+    });
+
+    instrumentOperationAsVsCodeCommand(COMMAND_IGNORE_INSPECTIONS_FROM_COMMENT, async (thread: CommentThread) => {
+        const comment = thread.comments[0] as InspectionComment;
+        const inspeciton = comment.inspection;
+        const { document, symbol } = inspeciton;
+        if (inspeciton) {
+            sendInfo(`${COMMAND_IGNORE_INSPECTIONS_FROM_COMMENT}.info`, { problem: inspeciton.problem.description, solution: inspeciton.solution });
+        }
+        InspectionCache.ignoreInspections(document!, symbol, inspeciton);
+        renderer.rerender(document!);
     });
 }
 

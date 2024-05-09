@@ -9,6 +9,7 @@ import { isCodeLensDisabled, logger, sendEvent } from "../utils";
 import { InspectActionCodeLensProvider } from "./InspectActionCodeLensProvider";
 import { debounce } from "lodash";
 import InspectionCache from "./InspectionCache";
+import { CommentRenderer } from "./render/CommentRenderer";
 
 /**
  * `DocumentRenderer` is responsible for 
@@ -28,6 +29,7 @@ export class DocumentRenderer {
         this.availableRenderers['guttericons'] = new GutterIconRenderer();
         this.availableRenderers['codelenses'] = new CodeLensRenderer();
         this.availableRenderers['rulerhighlights'] = new RulerHighlightRenderer();
+        this.availableRenderers['comments'] = new CommentRenderer();
     }
 
     public install(context: ExtensionContext): DocumentRenderer {
@@ -105,9 +107,9 @@ export class DocumentRenderer {
             settings.push('rulerhighlights');
             const disabled = isCodeLensDisabled();
             if (disabled) {
-                logger.warn('CodeLens is disabled, fallback to GutterIcons');
+                logger.warn('CodeLens is disabled, fallback to Comments');
             }
-            settings.push(disabled ? 'guttericons' : 'codelenses');
+            settings.push(disabled ? 'comments' : 'codelenses');
             if (disabled) {
                 sendEvent('java.copilot.inspection.codeLensDisabled', { settings: settings.join(',') });
             }
