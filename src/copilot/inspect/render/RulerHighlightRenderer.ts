@@ -42,7 +42,7 @@ export class RulerHighlightRenderer implements InspectionRenderer {
 
     public renderInspections(document: TextDocument, inspections: Inspection[]): void {
         const editor = window.visibleTextEditors.find(e => e.document.uri === document.uri);
-        if (inspections.length < 1 || !editor || !this.rulerDecorationType) {
+        if (!editor || !this.rulerDecorationType) {
             return;
         }
         const oldItems: readonly InspectionRulerHighlight[] = this.rulerHighlights.get(document.uri) ?? [];

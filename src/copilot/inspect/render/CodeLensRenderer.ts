@@ -39,7 +39,7 @@ export class CodeLensRenderer implements InspectionRenderer {
     }
 
     public renderInspections(document: TextDocument, inspections: Inspection[]): void {
-        if (inspections.length < 1 || !this.codeLenses) {
+        if (!this.codeLenses) {
             return;
         }
         const oldItems = this.codeLenses.get(document.uri) ?? [];

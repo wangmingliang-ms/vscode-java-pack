@@ -10,6 +10,7 @@ import { isCodeLensDisabled, logger } from "../utils";
 import { InspectActionCodeLensProvider } from "./InspectActionCodeLensProvider";
 import { debounce } from "lodash";
 import InspectionCache from "./InspectionCache";
+import { CommentRenderer } from "./render/CommentRenderer";
 
 /**
  * `DocumentRenderer` is responsible for 
@@ -29,6 +30,7 @@ export class DocumentRenderer {
         this.availableRenderers['guttericons'] = new GutterIconRenderer();
         this.availableRenderers['codelenses'] = new CodeLensRenderer();
         this.availableRenderers['rulerhighlights'] = new RulerHighlightRenderer();
+        this.availableRenderers['comments'] = new CommentRenderer();
     }
 
     public install(context: ExtensionContext): DocumentRenderer {
@@ -55,29 +57,23 @@ export class DocumentRenderer {
      */
     public async rerender(document: TextDocument, debounced: boolean = false): Promise<void> {
         if (document.languageId !== 'java') return;
-        if (!debounced) {
-            this.inspectActionCodeLensProvider.rerender(document);
-            this.rerenderInspections(document);
-            return;
-        }
         // clear all rendered inspections first
         this.installedRenderers.forEach(r => r.clear(document));
+        if (!debounced) {
+            this.inspectActionCodeLensProvider.rerender(document);
+            const inspections = await InspectionCache.getCachedInspectionsOfDoc(document);
+            this.installedRenderers.forEach(r => r.renderInspections(document, inspections));
+            return;
+        }
         const key = document.uri.fsPath;
         if (!this.rerenderDebouncelyMap[key]) {
-            this.rerenderDebouncelyMap[key] = debounce((document: TextDocument) => {
+            this.rerenderDebouncelyMap[key] = debounce(async (document: TextDocument) => {
                 this.inspectActionCodeLensProvider.rerender(document);
-                this.rerenderInspections(document);
+                const inspections = await InspectionCache.getCachedInspectionsOfDoc(document);
+                this.installedRenderers.forEach(r => r.renderInspections(document, inspections));
             });
         }
         this.rerenderDebouncelyMap[key](document);
-    }
-
-    private async rerenderInspections(document: TextDocument): Promise<void> {
-        const inspections = await InspectionCache.getCachedInspectionsOfDoc(document);
-        this.installedRenderers.forEach(r => r.clear(document));
-        this.installedRenderers.forEach(r => {
-            r.renderInspections(document, inspections);
-        });
     }
 
     private reloadInspectionRenderers(context: ExtensionContext): string[] {

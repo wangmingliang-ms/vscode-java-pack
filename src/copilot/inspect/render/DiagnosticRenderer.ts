@@ -36,7 +36,7 @@ export class DiagnosticRenderer implements InspectionRenderer {
     }
 
     public renderInspections(document: TextDocument, inspections: Inspection[]): void {
-        if (inspections.length < 1 || !this.diagnostics) {
+        if (!this.diagnostics) {
             return;
         }
         const oldItems: readonly InspectionDiagnostic[] = (this.diagnostics.get(document.uri) ?? []) as InspectionDiagnostic[];

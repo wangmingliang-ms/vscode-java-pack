@@ -44,7 +44,7 @@ export class GutterIconRenderer implements InspectionRenderer {
 
     public renderInspections(document: TextDocument, inspections: Inspection[]): void {
         const editor = window.visibleTextEditors.find(e => e.document.uri === document.uri);
-        if (inspections.length < 1 || !editor || !this.gutterIconDecorationType) {
+        if (!editor || !this.gutterIconDecorationType) {
             return;
         }
 
