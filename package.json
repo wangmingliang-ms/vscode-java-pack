@@ -309,6 +309,18 @@
       }
     },
     "menus": {
+      "comments/commentThread/additionalActions": [
+        {
+          "command": "java.copilot.inspection.fix.comment",
+          "group": "inline@1",
+          "when": "commentController == github-copilot-for-java"
+        },
+        {
+          "command": "java.copilot.inspection.ignore.comment",
+          "group": "inline@2",
+          "when": "commentController == github-copilot-for-java"
+        }
+      ],
       "commentsView/commentThread/context": [
         {
           "command": "java.copilot.inspection.fix.comment",
@@ -328,18 +340,6 @@
         {
           "command": "java.copilot.inspection.ignore.comment",
           "group": "context@2",
-          "when": "commentController == github-copilot-for-java"
-        }
-      ],
-      "comments/commentThread/additionalActions": [
-        {
-          "command": "java.copilot.inspection.fix.comment",
-          "group": "inline@1",
-          "when": "commentController == github-copilot-for-java"
-        },
-        {
-          "command": "java.copilot.inspection.ignore.comment",
-          "group": "inline@2",
           "when": "commentController == github-copilot-for-java"
         }
       ],
